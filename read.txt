@@ -1,0 +1,5 @@
+client connect
+let socket = new WebSocket("ws://localhost:3000/ws");
+socket.onmessage = (event) => {console.log("received message from server:", event.data)}
+(event) => {console.log("received message from server:", event.data)}
+socket.send("hello client how are you")

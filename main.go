@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/rakheshprasaath/trade-book-websocket/database"
+	"github.com/rakheshprasaath/trade-book-websocket/handler"
 	"golang.org/x/net/websocket"
 )
 
@@ -17,6 +19,15 @@ func NewServer() *Server{
 		conns:make(map[*websocket.Conn]bool),
 	}
 }
+
+// func (s *Server) handleWSOrderBook(ws *websocket.Conn){
+// 	fmt.Println("new incoming connection from client to orderbook feed:", ws.RemoteAddr())
+// 	for{
+// 		payload := fmt.Sprintf("orderbook data -> %d\n", time.Now().UnixNano())
+// 		ws.Write([]byte(payload))
+// 		time.Sleep(time.Second * 2)
+// 	}
+// }
 
 func(s *Server) handleWS(ws *websocket.Conn){
 	fmt.Println("new incoming connection from client:", ws.RemoteAddr())
@@ -38,6 +49,7 @@ func(s *Server) readLoop(ws *websocket.Conn){
 		}
 		msg :=buf[:n]
 		fmt.Println(string(msg))
+		handler.ProcessData(string(msg))
 		ws.Write([]byte("thank you received"))
 		// s.broadcast(msg)
 	}
@@ -53,8 +65,12 @@ func(s *Server) readLoop(ws *websocket.Conn){
 // 	}
 // }
 
+
+
 func main(){
+	database.Connect()
 	server := NewServer()
 	http.Handle("/ws", websocket.Handler(server.handleWS))
+	// http.Handle("/orderbookfeed", websocket.Handler(server.handleWSOrderBook))
 	http.ListenAndServe(":3000",nil)
 }
